@@ -1,9 +1,6 @@
 import fr.epita.tf_idf.*;
 
-import javax.security.auth.callback.LanguageCallback;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipEntry;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,7 +8,12 @@ public class Main {
         String url = "";
 
         TransportLayer transportLayer = new TransportLayer();
-        String htmlFromURL = transportLayer.fromUrl(url);
+        String htmlFromURL = null;
+        try {
+            htmlFromURL = transportLayer.fromUrl(url);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
 
         ContentCleanupLayer contentCleanupLayer = new ContentCleanupLayer();
 
