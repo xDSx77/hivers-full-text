@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TokenizationLayer {
@@ -11,9 +13,9 @@ public class TokenizationLayer {
     private final String stopWordFilePath;
     private BufferedReader stopWordFileReader = null;
 
-    public TokenizationLayer(String stopWordFilePath) {
+    public TokenizationLayer(final String stopWordFilePath) {
         this.stopWordFilePath = stopWordFilePath;
-        BufferedReader reader = null;
+        final BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(stopWordFilePath));
             this.stopWordFileReader = reader;
@@ -29,8 +31,18 @@ public class TokenizationLayer {
     public List<String> tokenize(final String textFromURL) {
         if (textFromURL == null)
             return new ArrayList<>();
+        final String lowerCaseText = textFromURL.toLowerCase();
 
-        List<String> tokenList = new ArrayList<>(Arrays.asList(textFromURL.split(" ")));
+        List<String> tokenList = new ArrayList<>();
+
+        final String regex = "[0-9A-Za-zÀ-ÖØ-öø-ÿ]+";
+        final Pattern pattern = Pattern.compile(regex);
+        final Matcher matcher = pattern.matcher(lowerCaseText);
+        while (matcher.find()) {
+            String word = matcher.group();
+            tokenList.add(word);
+        }
+
         List<String> stopWordList = new ArrayList<>();
         if (stopWordFileReader != null) {
             String currentLine;
@@ -44,10 +56,9 @@ public class TokenizationLayer {
                 }
             }
         }
-        List<String> filteredList = tokenList.stream()
-                .filter(stopWordList::contains)
-                .collect(Collectors.toList());
 
-        return tokenList;
+        return tokenList.stream()
+                .filter(str -> !stopWordList.contains(str))
+                .collect(Collectors.toList());
     }
 }
