@@ -26,7 +26,7 @@ public class Indexer {
 
     private ArrayList<Token> vectorize(String queryString) {
         TokenizationLayer tokenizationLayer = new TokenizationLayer();
-        ArrayList<String> tokenList = tokenizationLayer.tokenize(queryString);
+        List<String> tokenList = tokenizationLayer.tokenize(queryString);
 
         VectorizationLayer vectorConversionLayer = new VectorizationLayer();
         return vectorConversionLayer.vectorize(tokenList);

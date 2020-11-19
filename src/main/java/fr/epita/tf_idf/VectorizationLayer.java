@@ -14,7 +14,7 @@ public class VectorizationLayer {
                 vector.add(new Token(word, 1f / tokenListFromRawHTML.size(), i));
             else {
                 token.get().addIndex(i);
-                token.get().setFrequency(((float)token.get().getCount()) / tokenListFromRawHTML.size());
+                token.get().setFrequency(((float) token.get().getCount()) / tokenListFromRawHTML.size());
             }
         }
         return vector;

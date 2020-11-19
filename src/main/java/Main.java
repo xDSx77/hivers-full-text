@@ -21,10 +21,10 @@ public class Main {
         String textFromURL = contentCleanupLayer.cleanupHTML(htmlFromURL);
         String textFromRawHTML = contentCleanupLayer.cleanupHTML(rawHTML);
 
-        TokenizationLayer tokenizationLayer = new TokenizationLayer();
+        TokenizationLayer tokenizationLayer = new TokenizationLayer("stopwords-filter-fr.txt");
 
-        ArrayList<String> tokenListFromURL = tokenizationLayer.tokenize(textFromURL);
-        ArrayList<String> tokenListFromRawHTML = tokenizationLayer.tokenize(textFromRawHTML);
+        List<String> tokenListFromURL = tokenizationLayer.tokenize(textFromURL);
+        List<String> tokenListFromRawHTML = tokenizationLayer.tokenize(textFromRawHTML);
 
         VectorizationLayer vectorConversionLayer = new VectorizationLayer();
 
