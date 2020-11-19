@@ -8,16 +8,17 @@ public class Token {
     float frequency;
     final List<Integer> indexes;
 
-    public Token(String word, float frequency, List<Integer> indexes) {
+    public Token(String word, Float frequency, List<Integer> indexes) {
         this.word = word;
         this.frequency = frequency;
         this.indexes = indexes;
     }
 
-    public Token(String word, float frequency, int index) {
+    public Token(String word, Float frequency, int index) {
         this.word = word;
         this.frequency = frequency;
-        indexes = new ArrayList<>(index);
+        indexes = new ArrayList<>();
+        indexes.add(index);
     }
 
     public void addIndex(int index) {
