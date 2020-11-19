@@ -3,13 +3,10 @@ package fr.epita.tf_idf;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class ContentCleanupLayerTest {
 
     @Test
-    public void testSimpleDivCleanUp()
-    {
+    public void testSimpleDivCleanUp() {
         final String html = "<div>this is a simple string</div>";
         final String text = "this is a simple string";
 
@@ -18,8 +15,7 @@ class ContentCleanupLayerTest {
     }
 
     @Test
-    public void testPandDivSimpleCleanUp()
-    {
+    public void testPandDivSimpleCleanUp() {
         final String html = "<p>this is</p><div> a simple string</div>";
         final String text = "this is a simple string";
 
@@ -28,8 +24,7 @@ class ContentCleanupLayerTest {
     }
 
     @Test
-    public void testSimpleHTMLPage()
-    {
+    public void testSimpleHTMLPage() {
         final String html = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
@@ -49,8 +44,7 @@ class ContentCleanupLayerTest {
     }
 
     @Test
-    public void testHTMLWithJSPage()
-    {
+    public void testHTMLWithJSPage() {
         final String html = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
@@ -73,4 +67,27 @@ class ContentCleanupLayerTest {
         Assertions.assertEquals(text, contentCleanupLayer.cleanupHTML(html));
     }
 
+    @Test
+    public void testHTMLWithJSscriptTag() {
+        final String html = "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "<title>this is</title>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "\n" +
+                "<h1>a\n" +
+                "<p> simple string</p>\n" +
+                "\n" +
+                "</body>\n" +
+                "<script type=\"text/javascript\">\n" +
+                "console.log(\"ignored content\"\n" +
+                "</script>\n" +
+                "</html>";
+
+        final String text = "this is a simple string";
+
+        ContentCleanupLayer contentCleanupLayer = new ContentCleanupLayer();
+        Assertions.assertEquals(text, contentCleanupLayer.cleanupHTML(html));
+    }
 }
