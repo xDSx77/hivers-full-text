@@ -1,6 +1,7 @@
 import fr.epita.tf_idf.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -37,6 +38,6 @@ public class Main {
 
         String queryString = "the blue";
 
-        ArrayList<String> documents = indexer.query(queryString);
+        List<String> documents = indexer.query(queryString);
     }
 }
