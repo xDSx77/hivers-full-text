@@ -32,7 +32,8 @@ public class Main {
 
         Indexer indexer = new Indexer();
 
-        indexer.index(tokenVectorFromURL);
+        indexer.index(tokenVectorFromURL, textFromURL);
+        indexer.index(tokenVectorFromRawHTML, textFromRawHTML);
 
         String queryString = "the blue";
 
