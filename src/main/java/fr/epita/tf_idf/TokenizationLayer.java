@@ -1,64 +1,111 @@
 package fr.epita.tf_idf;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TokenizationLayer {
 
-    private final String stopWordFilePath;
-    private BufferedReader stopWordFileReader = null;
+    private final List<String> stopWordList;
+    private final Map<String, List<String>> synonymMap;
 
-    public TokenizationLayer(final String stopWordFilePath) {
-        this.stopWordFilePath = stopWordFilePath;
-        final BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(stopWordFilePath));
-            this.stopWordFileReader = reader;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    public TokenizationLayer() throws FileNotFoundException{
+        final BufferedReader stopWordListReader = new BufferedReader(new FileReader("stopwords-filter-fr.txt"));
+        this.stopWordList = new ArrayList<>();
+
+        String currentLine;
+        while (true) {
+            try {
+                if ((currentLine = stopWordListReader.readLine()) == null)
+                    break;
+                stopWordList.add(currentLine);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        final BufferedReader synonymDictionaryReader = new BufferedReader(new FileReader("synonyms-dictionnary-fr-v2.txt"));
+        this.synonymMap = new TreeMap<>();
+
+        while (true) {
+            try {
+                if ((currentLine = synonymDictionaryReader.readLine()) == null)
+                    break;
+
+                final List<String> wordAndSynonyms = Arrays.asList(currentLine.split(","));
+                final String word = wordAndSynonyms.get(0);
+                final List<String> synonyms = wordAndSynonyms.subList(1, wordAndSynonyms.size());
+
+                synonymMap.put(word, synonyms);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public TokenizationLayer() {
-        this.stopWordFilePath = null;
+    private static List<String> sliceInput(final String lowerCaseText) {
+        List<String> tokens = new ArrayList<>();
+
+        final String regex = "(\\p{IsLatin}|\\d)+";
+        final Pattern pattern = Pattern.compile(regex);
+        final Matcher matcher = pattern.matcher(lowerCaseText);
+
+        while (matcher.find()) {
+            final String word = matcher.group();
+            tokens.add(word);
+        }
+        return tokens;
+    }
+
+    private List<String> synonymReplacement(List<String> tokenList) {
+        int i = 0;
+        for (String token : tokenList) {
+            for (Map.Entry<String, List<String>> wordWithSynonyms : synonymMap.entrySet()) {
+                boolean break_ = false;
+                String word = wordWithSynonyms.getKey();
+                if (token.equals(word))
+                    break;
+
+                List<String> synonyms = wordWithSynonyms.getValue();
+                for (String synonym : synonyms) {
+                    if (token.equals(synonym)) {
+                        tokenList.set(i, word);
+                        break_ = true;
+                        break;
+                    }
+                }
+                if (break_) break;
+            }
+            i++;
+        }
+        return tokenList;
     }
 
     public List<String> tokenize(final String textFromURL) {
         if (textFromURL == null)
             return new ArrayList<>();
+
+        // lowercase text
         final String lowerCaseText = textFromURL.toLowerCase();
 
-        List<String> tokenList = new ArrayList<>();
+        // Slice the input stream into tokens
+        List<String> tokenList = sliceInput(lowerCaseText);
 
-        final String regex = "[0-9A-Za-zÀ-ÖØ-öø-ÿ]+";
-        final Pattern pattern = Pattern.compile(regex);
-        final Matcher matcher = pattern.matcher(lowerCaseText);
-        while (matcher.find()) {
-            String word = matcher.group();
-            tokenList.add(word);
-        }
-
-        List<String> stopWordList = new ArrayList<>();
-        if (stopWordFileReader != null) {
-            String currentLine;
-            while (true) {
-                try {
-                    if ((currentLine = stopWordFileReader.readLine()) == null)
-                        break;
-                    stopWordList.add(currentLine);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return tokenList.stream()
+        // Suppress stop words
+        tokenList = tokenList.stream()
                 .filter(str -> !stopWordList.contains(str))
                 .collect(Collectors.toList());
+
+        // Apply stemming algorithm
+
+
+        // Apply synonyms replacement
+        return synonymReplacement(tokenList);
     }
+
+
+
+
 }

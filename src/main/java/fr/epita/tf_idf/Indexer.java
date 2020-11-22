@@ -1,4 +1,5 @@
 package fr.epita.tf_idf;
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,13 @@ public class Indexer {
 
 
     private ArrayList<Token> vectorize(String queryString) {
-        TokenizationLayer tokenizationLayer = new TokenizationLayer();
+        TokenizationLayer tokenizationLayer = null;
+        try {
+            tokenizationLayer = new TokenizationLayer();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
         List<String> tokenList = tokenizationLayer.tokenize(queryString);
 
         VectorizationLayer vectorConversionLayer = new VectorizationLayer();
