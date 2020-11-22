@@ -12,7 +12,7 @@ public class TokenizationLayer {
     private final Map<String, List<String>> synonymMap;
 
     public TokenizationLayer() throws FileNotFoundException{
-        final BufferedReader stopWordListReader = new BufferedReader(new FileReader("stopwords-filter-fr.txt"));
+        final BufferedReader stopWordListReader = new BufferedReader(new FileReader("stop-words-fr.txt"));
         this.stopWordList = new ArrayList<>();
 
         String currentLine;
@@ -26,7 +26,7 @@ public class TokenizationLayer {
             }
         }
 
-        final BufferedReader synonymDictionaryReader = new BufferedReader(new FileReader("synonyms-dictionnary-fr-v2.txt"));
+        final BufferedReader synonymDictionaryReader = new BufferedReader(new FileReader("synonyms-dictionary-fr-v2.txt"));
         this.synonymMap = new TreeMap<>();
 
         while (true) {
@@ -99,7 +99,8 @@ public class TokenizationLayer {
                 .collect(Collectors.toList());
 
         // Apply stemming algorithm
-
+        FrenchStemmer frenchStemmer = new FrenchStemmerImpl();
+        tokenList.replaceAll(frenchStemmer::getStemmedWord);
 
         // Apply synonyms replacement
         return synonymReplacement(tokenList);
