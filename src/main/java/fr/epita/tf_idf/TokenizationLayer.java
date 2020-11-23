@@ -59,28 +59,20 @@ public class TokenizationLayer {
         return tokens;
     }
 
-    private List<String> synonymReplacement(List<String> tokenList) {
-        int i = 0;
-        for (String token : tokenList) {
-            for (Map.Entry<String, List<String>> wordWithSynonyms : synonymMap.entrySet()) {
-                boolean break_ = false;
-                String word = wordWithSynonyms.getKey();
-                if (token.equals(word))
-                    break;
+    private String synonymReplacement(final String token) {
+        for (Map.Entry<String, List<String>> wordWithSynonyms : synonymMap.entrySet()) {
+            final String word = wordWithSynonyms.getKey();
+            if (token.equals(word))
+                return token;
 
-                List<String> synonyms = wordWithSynonyms.getValue();
-                for (String synonym : synonyms) {
-                    if (token.equals(synonym)) {
-                        tokenList.set(i, word);
-                        break_ = true;
-                        break;
-                    }
+            final List<String> synonyms = wordWithSynonyms.getValue();
+            for (String synonym : synonyms) {
+                if (token.equals(synonym)) {
+                    return word;
                 }
-                if (break_) break;
             }
-            i++;
         }
-        return tokenList;
+        return token;
     }
 
     public List<String> tokenize(final String textFromURL) {
@@ -98,12 +90,14 @@ public class TokenizationLayer {
                 .filter(str -> !stopWordList.contains(str))
                 .collect(Collectors.toList());
 
+        // Apply synonyms replacement
+        tokenList.replaceAll(this::synonymReplacement);
+
         // Apply stemming algorithm
         FrenchStemmer frenchStemmer = new FrenchStemmerImpl();
         tokenList.replaceAll(frenchStemmer::getStemmedWord);
 
-        // Apply synonyms replacement
-        return synonymReplacement(tokenList);
+        return tokenList;
     }
 
 
