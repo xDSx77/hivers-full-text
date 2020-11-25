@@ -93,6 +93,9 @@ public class TokenizationLayer {
         // Apply synonyms replacement
         tokenList.replaceAll(this::synonymReplacement);
 
+        // Apply a second layer synonyms replacement
+        tokenList.replaceAll(this::synonymReplacement);
+
         // Apply stemming algorithm
         FrenchStemmer frenchStemmer = new FrenchStemmerImpl();
         tokenList.replaceAll(frenchStemmer::getStemmedWord);

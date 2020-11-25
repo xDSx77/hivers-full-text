@@ -1,27 +1,44 @@
 package fr.epita.tf_idf;
+import javax.print.Doc;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Indexer {
 
-    final Map<String, List<Pair<String, List<Token>>>> keywordToDocumentMap = new HashMap<>();
+    public class Document
+    {
+        public final String text;
+        public final List<Token> tokenList;
 
-    public void index(ArrayList<Token> tokenVector, String document) {
+        public Document(String text, List<Token> tokenList) {
+            this.text = text;
+            this.tokenList = tokenList;
+        }
+    }
+
+    final Map<String, List<Document>> keywordToDocumentMap = new HashMap<>();
+
+    public void index(ArrayList<Token> tokenVector, String documentText) {
+
+        List<Token> tokenList = new ArrayList<>();
+        Document document = new Document(documentText, tokenList);
+
         for (Token token: tokenVector) {
-            List<Pair<String, List<Token>>> documents;
+            List<Document> documents;
             if (!keywordToDocumentMap.containsKey(token.word)){
                 documents = new ArrayList<>();
                 keywordToDocumentMap.put(token.word, documents);
             }
             else
                 documents = keywordToDocumentMap.get(token.word);
-            documents.add(new Pair<>(document, tokenVector));
+            tokenList.add(token);
+            documents.add(document);
         }
     }
 
     private double computeIDF(int corpusSize, int matchingDocs) {
-        return Math.log((double)corpusSize / (1 + (double)matchingDocs));
+        return Math.log((double)corpusSize / (1 + (double)matchingDocs)) + 1;
     }
 
 
@@ -54,10 +71,10 @@ public class Indexer {
         return Math.acos(dotProduct / (normv1 * normv2));
     }
 
-    private List<Double> TFIDFVector(List<Token> queryTokens, List<Token> documentTokens, int corpusSize) {
+    private List<Double> TFIDFVector(Set<Token> allTokens, List<Token> documentTokens, int corpusSize) {
         List<Double> vector = new ArrayList<>();
         double norm = 0;
-        for (Token token : queryTokens) {
+        for (Token token :  allTokens) {
             float frequency = documentTokens
                     .stream()
                     .filter(x -> x.word.equals(token.word))
@@ -75,25 +92,34 @@ public class Indexer {
     }
 
     public List<String> query(String queryString) {
-        Set<Pair<String, List<Token>>> documents = new HashSet<>();
+        Set<Document> documents = new HashSet<>();
         ArrayList<Token> queryTokens = vectorize(queryString);
         for (Token queryToken : queryTokens) {
-            List<Pair<String, List<Token>>> documentsResult = keywordToDocumentMap.get(queryToken.word);
+            List<Document> documentsResult = keywordToDocumentMap.get(queryToken.word);
             if (documentsResult != null)
                 documents.addAll(documentsResult);
         }
 
-        List<Double> queryTFIDF = TFIDFVector(queryTokens, queryTokens,documents.size());
+        List<Pair<Document, Double>> sortedDocuments = new ArrayList<>();
+        for (Document document : documents) {
 
-        List<Pair<String, Double>> sortedDocuments = new ArrayList<>();
-        for (Pair<String, List<Token>> document : documents) {
-            List<Double> documentVector = TFIDFVector(queryTokens, document.item2,documents.size());
+            Set<Token> allTokens = new HashSet<>();
+            allTokens.addAll(document.tokenList);
+            allTokens.addAll(queryTokens);
 
+            List<Double> queryTFIDF = TFIDFVector(allTokens, queryTokens,documents.size());
+            List<Double> documentVector = TFIDFVector(allTokens, document.tokenList,documents.size());
             double cosineSimilarity = computeSimilarity(documentVector, queryTFIDF);
-            sortedDocuments.add(new Pair<>(document.item1, cosineSimilarity));
+            sortedDocuments.add(new Pair<>(document, cosineSimilarity));
         }
 
-        sortedDocuments.sort((x, y) -> (int)(y.item2 - x.item2));
-        return sortedDocuments.stream().map(x -> x.item1).collect(Collectors.toList());
+        sortedDocuments.sort((x, y) -> {
+            if (y.item2 - x.item2 > 0)
+                return -1;
+            else if (y.item2 - x.item2 < 0)
+                return  1;
+            return 0;
+        });
+        return sortedDocuments.stream().map(x -> x.item1.text).collect(Collectors.toList());
     }
 }
